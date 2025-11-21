@@ -1,10 +1,11 @@
-import os
 import cv2
 import numpy as np
 from glob import glob
 # type hints 
-from typing import List, Tuple
-import math
+from typing import List 
+
+# for testing purposes
+#import os
 
 
 try: 
@@ -75,7 +76,7 @@ def normalize_img(img, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)) ->
         img_float[..., c] = (img_float[..., c] - mean[c]) / std[c]
 
 
-def img_to_clip(img_paths): 
+def img_to_clip(img_paths) -> List[torch.Tensor]: 
 
 
     imgs = []
