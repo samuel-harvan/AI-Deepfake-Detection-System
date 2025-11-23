@@ -4,8 +4,8 @@ import yt_dlp
 def download_link(url): 
     settings = {
         "format": "best",
-        "outtmpl": "video.mp4",
+        "outtmpl": "video_dfds.mp4",
         "quiet": True
     }
 
-    yt_dlp.YoutubeDL(settings).download([url])
+    yt_dlp.YoutubeDL(settings).download(url)
