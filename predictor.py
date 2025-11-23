@@ -1,5 +1,4 @@
 import torch 
-import torch.nn.functional as F
 import numpy as np
 from network.xception import xception
 from statistics import mean
@@ -9,7 +8,7 @@ def predict(clips, batch_num):
 
     # load model and weights 
     model = xception(num_classes=2, pretrained=None) 
-    load_weight = torch.load("network/ffpp_c23.pth", map_location=torch.device("cpu"))
+    load_weight = torch.load("network/xception_deepfake.pth", map_location=torch.device("cpu"))
     model.load_state_dict(load_weight)
 
 
