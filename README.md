@@ -1,3 +1,3 @@
  <sub>Dataset used: https://www.kaggle.com/datasets/xdxd003/ff-c23/data</sub>
 
-<sub>Xception architecture used: https://github.com/HongguLiu/Deepfake-Detection/blob/master/network/xception.py</sub> 
+<sub>Xception archteciture used: https://github.com/tstandley/Xception-PyTorch/blob/master/xception.py</sub>
