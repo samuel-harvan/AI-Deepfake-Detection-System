@@ -1,0 +1,5 @@
+__pychache__
+/venv
+
+# full dataset is too large to store in repo
+/data 
