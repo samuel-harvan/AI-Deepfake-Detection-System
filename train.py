@@ -1,10 +1,10 @@
 import torch
 import numpy as np
 import torch.nn as nn
-from xception_model import xception
+from network.xception_model import xception
 from load_data import create_tdata
-from sklearn.metrics import roc_auc_score
 import matplotlib.pyplot as plt 
+from sklearn.metrics import roc_auc_score
 
 
 # data loaders 
@@ -41,8 +41,12 @@ model = model.to(torch.device("mps"))
 
 
 model.train()
-losses = [] 
-avg_loss = []
+
+
+train_loss_batch = [] 
+avg_train_losses = [] 
+val_loss_batch = []
+avg_val_losses = []
 
 
 
@@ -68,7 +72,7 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
 
             # measure loss
             loss = criterion(y_pred, labels) 
-            losses.append(loss.item()) 
+            train_loss_batch.append(loss.item()) 
 
 
             # backpropagation 
@@ -77,7 +81,11 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
             optimizer.step()
 
 
-        avg_loss.append(np.mean(losses))
+        avg_train_losses.append(np.mean(train_loss_batch))
+        train_loss_batch = [] 
+
+
+        print(f"Epoch: {epoch+1}, Loss:{avg_train_losses[-1]}")
 
 
         # validation 
@@ -98,28 +106,33 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
                 
                 # Find error
                 val_loss = criterion(y_val, labels) 
+                val_loss_batch.append(val_loss.item())
 
 
-                if val_loss < best_val: 
-
-                    best_val = val_loss
-
-
-                    # save weights
-                    torch.save(model.state_dict(), "trained_weights.pth")
+        avg_val_losses.append(np.mean(val_loss_batch))
+        val_loss_batch = [] 
 
 
-                else: 
+        if avg_val_losses[-1] < best_val: 
 
-                    continue
-        
+            best_val = avg_val_losses[-1]
 
-        print(f"Final loss during training: {losses[-1]:.5f}")
-        
-        
-    plt.plot(range(num_epochs), avg_loss)
-    plt.ylabel("Avg. Loss/Error")
+
+            # save weights
+            torch.save(model.state_dict(), "network/trained_weights.pth")
+
+
+        else: 
+
+            continue
+
+             
+    # monitor overfitting
+    plt.plot(range(num_epochs), avg_train_losses, label="Training Losses", color="red", marker="o")
+    plt.plot(range(num_epochs), avg_val_losses, label="Validation Losses", color="green", marker="o")
+    plt.ylabel("Validation loss")
     plt.xlabel("Epoch") 
+    plt.legend()
     plt.show() 
 
 
@@ -183,8 +196,6 @@ def test(model, test_loader):
 
     print(f"Model accuracy during testing was: {accuracy}")
     print(f"roc-auc: {roc_auc}")
-
-
 
 
 

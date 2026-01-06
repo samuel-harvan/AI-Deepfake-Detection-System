@@ -1,6 +1,9 @@
+# Need to fix up some issues with predictions
+
+
 import torch 
 from network.xception_model import xception
-from statistics import mean
+import numpy as np 
 
 
 def predict(clips, batch_num) -> int: 
@@ -9,8 +12,8 @@ def predict(clips, batch_num) -> int:
     model = xception(num_classes=2, pretrained=None) 
 
 
-    # Change path to model weights once model is trained
-    #load_weight = torch.load("network/xception_deepfake.pth", map_location=torch.device("cpu"))
+    # need to detect if mps is available else you have to switch to cuda or cpu (cross platform support)
+    #load_weight = torch.load("network/trained_weights.pth", map_location=torch.device("mps"))
     #model.load_state_dict(load_weight)
 
 
@@ -45,7 +48,7 @@ def predict(clips, batch_num) -> int:
 
 
     # average prediction score (0 to 1) 
-    avg_pred = mean(predictions) 
+    avg_pred = np.mean(predictions) 
 
 
     # return decision for batch 
