@@ -97,9 +97,9 @@ def find_frames(limit) -> None:
 
 
     # store variables locally to be accessed later for training 
-    with open("stored_data.json", "w") as var_file:
+    with open("stored_vars/xy_var.json", "w") as var_file:
 
         json.dump({"paths": data_paths, "labels": labels}, var_file) 
 
 
-find_frames(10) 
+#find_frames(10) 

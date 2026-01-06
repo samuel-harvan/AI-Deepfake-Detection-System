@@ -1,8 +1,7 @@
 from detection import read_vid
 # from detection_img import read_img
-from transform import img_to_clip 
+from utils import img_to_clip, download_link
 from predictor import predict
-from dlp import download_link 
 from tkinter import Tk
 from tkinter import simpledialog
 from tkinter.filedialog import askopenfilename

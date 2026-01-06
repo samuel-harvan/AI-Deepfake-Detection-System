@@ -1,12 +1,13 @@
 import cv2
 import numpy as np
-# type hints 
-from typing import List 
 import torch
+import yt_dlp
 
 # for testing purposes
 #import os
 
+
+# will change image preprocessing to using custom data loader
 
 def process_img(img) -> np.ndarray: 
     
@@ -46,7 +47,7 @@ def normalize_img(img, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)) -> np.ndarray:
 
 
 # import images from detection.py
-def img_to_clip(images: List[np.ndarray]) -> List[torch.Tensor]: 
+def img_to_clip(images: list[np.ndarray]) -> list[torch.Tensor]: 
 
 
     processed_imgs = []
@@ -76,7 +77,7 @@ def img_to_clip(images: List[np.ndarray]) -> List[torch.Tensor]:
 
         # Transpose array to (C, T, H, W) format 
         # .copy() added after debugging issues 
-        clip_arr = np.transpose(clip_arr, (3, 0, 1, 2)).copy()
+        clip_arr = np.transpose(clip_arr, (3, 0, 1, 2))
 
 
         # Converts to torch tensor and add batch dimension
@@ -87,7 +88,19 @@ def img_to_clip(images: List[np.ndarray]) -> List[torch.Tensor]:
 
 
         return clips
+    
 
 
-# Note: found optical flow as a potential addition to image processing to boost detection accuracy
-# Update: choose to stick with a 2D CNN as main neural network to generate predictions so optical flow is not necessary
+
+
+# for video link downloads
+def download_link(url) -> None: 
+
+    settings = {
+        "format": "best",
+        "outtmpl": "video_dfds.mp4",
+        "quiet": True
+    }
+
+
+    yt_dlp.YoutubeDL(settings).download(url)
