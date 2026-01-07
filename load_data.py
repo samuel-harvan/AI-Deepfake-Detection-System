@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from torchvision import transforms
@@ -24,7 +25,8 @@ class dataset_loader(Dataset):
 
         image = Image.open(self.frame_paths[index]) 
         image = self.transform(image) 
-        label = self.labels[index]
+        image = image.to(torch.float32)
+        label = int(self.labels[index])
 
 
         return image, label 
@@ -42,7 +44,7 @@ def create_tdata() -> tuple[DataLoader, DataLoader, DataLoader]:
         transforms.Resize((299, 299)), 
         transforms.ToTensor(), 
         transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]), 
-        transforms.RandomHorizontalFlip() # to prevent overfitting
+        transforms.RandomHorizontalFlip() # to reduce overfitting
     ])
 
     test_trans = transforms.Compose([
@@ -58,10 +60,9 @@ def create_tdata() -> tuple[DataLoader, DataLoader, DataLoader]:
         data = json.load(var_file) 
 
 
-    # CHANGE THIS: WE NEED 1000/1000 SPLIT FOR fake:real. RIGHT NOW ITS 2000/1000, fake:real
     # X: 20000 frames, 50/50 split (fake vs. real) 
-    X = data["paths"]
-    y = data["labels"]
+    X = data["paths"][0:5000] + data["paths"][10000:15000] + data["paths"][20000:]
+    y = data["labels"][0:5000] + data["labels"][10000:15000] + data["labels"][20000:]
 
 
     # Try to split by video (avoid data leakage from training to test data) 

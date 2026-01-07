@@ -8,6 +8,7 @@ import json
 def find_frames(limit) -> None: 
 
     # file paths 
+    # using two most common deepfake techniques from possible 6 deepfake folders
     real_vids = "/Users/Samko/Downloads/FaceForensics++_C23/original"
     face2face = "/Users/Samko/Downloads/FaceForensics++_C23/Face2Face"
     deepfakes = "/Users/Samko/Downloads/FaceForensics++_C23/Deepfakes"

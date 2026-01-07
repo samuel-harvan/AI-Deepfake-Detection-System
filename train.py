@@ -5,6 +5,7 @@ from network.xception_model import xception
 from load_data import create_tdata
 import matplotlib.pyplot as plt 
 from sklearn.metrics import roc_auc_score
+from plyer import notification
 
 
 # data loaders 
@@ -12,7 +13,12 @@ train_loader, test_loader, val_loader = create_tdata()
 
 
 # Load Xception model with pretrained ImageNet weights
-model = xception(pretrained=True, num_classes=1000)     
+#model = xception(pretrained=True, num_classes=1000)  
+
+
+# loading with second round of training
+model = xception(pretrained=False, num_classes=2)
+model.load_state_dict(torch.load("network/trained_weights.pth"))
 
 
 # Only training classifier layer
@@ -27,32 +33,32 @@ for param in model.fc.parameters():
     param.requires_grad = True
 
 
-# Set number of classes to 2
-model.fc = nn.Linear(2048, 2) 
+# Set number of classes to 2 (only necessary for initial training setup) 
+#model.fc = nn.Linear(2048, 2) 
 
 
 # Create optimizer/criterion  
-optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.0001)
+# Update: Changed lr from 0.0001 to 0.001 after first training/testing cycle
+optimizer = torch.optim.Adam(model.fc.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss() 
 
 
-# Move model to GPU 
 model = model.to(torch.device("mps")) 
 
 
 model.train()
 
 
-train_loss_batch = [] 
-avg_train_losses = [] 
-val_loss_batch = []
-avg_val_losses = []
-
-
 
 
 
 def train(model, train_loader, optimizer, criterion, num_epochs):
+
+    train_loss_batch = [] 
+    avg_train_losses = [] 
+    val_loss_batch = []
+    avg_val_losses = []
+
 
     best_val = float("infinity") 
 
@@ -85,8 +91,15 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
         train_loss_batch = [] 
 
 
-        print(f"Epoch: {epoch+1}, Loss:{avg_train_losses[-1]}")
+        print(f"Epoch {epoch+1}, Loss: {avg_train_losses[-1]:.6f}")
 
+
+        notification.notify(
+            title = "Training Update",
+            message = f"Epoch {epoch+1} finished. Loss recorded: {avg_train_losses[-1]:.6f}",
+            timeout = 15
+        )
+            
 
         # validation 
 
@@ -120,10 +133,11 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
 
             # save weights
             torch.save(model.state_dict(), "network/trained_weights.pth")
+            print("\nNew weights have been updated\n")
 
 
         else: 
-
+            
             continue
 
              
@@ -138,6 +152,9 @@ def train(model, train_loader, optimizer, criterion, num_epochs):
 
 # testing
 def test(model, test_loader): 
+
+    print("Beginning testing process.")
+
 
     model.eval()
 
@@ -194,7 +211,7 @@ def test(model, test_loader):
     roc_auc = roc_auc_score(labels, all_probs)
 
 
-    print(f"Model accuracy during testing was: {accuracy}")
+    print(f"\nModel accuracy during testing was: {accuracy}%")
     print(f"roc-auc: {roc_auc}")
 
 
@@ -206,9 +223,9 @@ if __name__ == "__main__":
 
 
     # pause before testing
-    print("Press 'ENTER' to continue to testing")
+    print("\nPress 'ENTER' to continue to testing")
     input()
 
 
     # testing 
-    test(model, test_loader, optimizer, criterion) 
+    test(model, test_loader) 
