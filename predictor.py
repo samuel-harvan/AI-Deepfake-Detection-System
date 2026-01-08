@@ -45,7 +45,7 @@ def predict(file_path) -> Union[float, None]:
     ])
 
 
-    # extract face frames
+    # extract face frames (for now using 50 frames per vid) 
     frames = read_vid(file_path, 50) 
 
 

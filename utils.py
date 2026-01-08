@@ -5,7 +5,7 @@ import yt_dlp
 from predictor import predict
 
 
-def load_pred(file_path): 
+def load_pred(file_path) -> str: 
 
      # finds frames with face
     final_pred = predict(file_path)
@@ -14,8 +14,7 @@ def load_pred(file_path):
     # if faces cannot be found, end the program
     if final_pred is None: 
 
-        print("No face frames detected in video. Prediction: 'None'")
-        exit() 
+        return "No face frames detected in video. Prediction: 'None'"
 
     
     else: 

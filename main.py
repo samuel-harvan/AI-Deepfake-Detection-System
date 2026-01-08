@@ -22,11 +22,12 @@ def main():
 
             download_link(url) 
 
-
+            
+            # later fix (video_dfds.mp4 is a test/placeholder)
             file_path = os.path.join(os.getcwd(), "video_dfds.mp4") 
 
 
-            return print(load_pred(file_path)) 
+            return print(f"\n{load_pred(file_path)}") 
 
 
         elif option == "file": 
@@ -40,7 +41,7 @@ def main():
                 exit() 
 
 
-            return print(f"\n {load_pred(file_path)}") 
+            return print(f"\n{load_pred(file_path)}") 
         
         
         elif option == "EXIT": 
