@@ -1,55 +1,53 @@
 from utils import download_link, load_pred
-from tkinter import Tk
-from tkinter import simpledialog
-from tkinter.filedialog import askopenfilename
 import os
+import FreeSimpleGUI as sg  # unnecessary once Flask implementation is complete (used for testing)
+
+
+# this version will not work on mac.os (next fix)
 
 
 def main(): 
-    
-    root = Tk() 
+
+    while True: 
+
+        print("Please enter if your data in a url or file format. Type 'file' or 'url':")
+        option = input() 
 
 
-    # for url processing (eventually will implement everything to Flask app) 
+        if option == "url": 
 
-    input = simpledialog.askstring("Deepface Detection System for Faces", "Is your video a link or file?")
-
-
-    if input.lower() == "link": 
-
-        url = simpledialog.askstring("Video Link", "Enter the video URL:")
+            # for uploading links
+            url = sg.popup_get_text("Enter video URL: ")
 
 
-        download_link(url) 
+            download_link(url) 
 
 
-        file_path = os.path.join(os.getcwd(), "video_dfds.mp4") 
+            file_path = os.path.join(os.getcwd(), "video_dfds.mp4") 
 
 
-        return load_pred(file_path) 
+            return print(load_pred(file_path)) 
 
 
-    else: 
+        elif option == "file": 
+            
+            # for uploading files 
+            file_path = sg.popup_get_file("Select a video file", file_types=(("MP4 files", "*.mp4"),))
+
+
+            if file_path is None: 
+                print("No file selected. Shutting down program.")
+                exit() 
+
+
+            return print(f"\n {load_pred(file_path)}") 
         
-         # for uploading files 
-        file_path = askopenfilename(
-            title = "Please select a video file to process", 
-            filetypes = [("Videos", "*.mp4")]
-        ) 
+        
+        elif option == "EXIT": 
 
+            return print("Have a good day :)")
+        
+        
+        else: 
 
-        if not file_path: 
-            print("No file selected. Shutting down program.")
-            exit() 
-
-
-        return load_pred(file_path) 
-
-
-
-
-
-if __name__ == "__main__": 
-
-    main() 
-    
+            print("Invalid input registered. Please try again or type 'EXIT' to shut down this program")

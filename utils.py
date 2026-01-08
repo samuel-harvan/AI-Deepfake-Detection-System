@@ -4,9 +4,6 @@ import torch
 import yt_dlp
 from predictor import predict
 
-# for testing purposes
-#import os
-
 
 def load_pred(file_path): 
 
