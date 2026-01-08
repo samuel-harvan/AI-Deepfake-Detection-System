@@ -1,15 +1,33 @@
-# Need to fix up some issues with predictions
-
-
 import torch 
+import cv2
+from torchvision import transforms
 from network.xception_model import xception
-import numpy as np 
+from detection import read_vid
 
 
-def predict(clips, batch_num) -> int: 
+# input type: video file
+def predict(file_path) -> float | None: 
+
+
+    if torch.cuda.is_available(): 
+
+        device = torch.device("cuda")
+
+
+    elif torch.backends.mps.is_available(): 
+
+        device = torch.device("mps") 
+
+    
+    else: 
+
+        device = torch.device("cpu")
+
 
     # load model and weights 
-    model = xception(num_classes=2, pretrained=None) 
+    model = xception(pretrained=False, num_classes=2) 
+    model.load_state_dict(torch.load("network/trained_weights.pth"), map_location=device)
+    # will upload weights to github and use that repo instead
 
 
     # need to detect if mps is available else you have to switch to cuda or cpu (cross platform support)
@@ -20,40 +38,42 @@ def predict(clips, batch_num) -> int:
     model.eval() 
 
 
-    predictions = []
+    eval_trans = transforms.Compose(
+        transforms.Resize(299, 299),
+        transforms.ToTensor(),
+        transforms.Normalize(std=(0.5, 0.5, 0.5), mean=(0.5, 0.5, 0.5))
+    )
 
 
-    # load 5D tensor and calculate frames per batch
-    clip = clips[batch_num]
-    num_frames = clip.shape[2]
+    frames = read_vid(file_path, 50) 
 
 
-    # convert to 4D tensor (batch number is always set to 1 for each batch of clips)
-    clip_4d = clip.permute(0, 2, 1, 3, 4).reshape(-1, clip.shape[2], clip.shape[3], clip.shape[4])
+    # if faces cannot be found, end the program
+    if len(frames) == 0: 
+        return None
 
 
-    # unpack each batch 
-    for i in range(num_frames): 
+    for frame in frames: 
 
-        # cycles through each frame
-        frame = clip_4d[:, i, :, :].unsqueeze(0) 
-     
-
-        # generate prediction
-        with torch.no_grad():
-            
-            logits = model(frame)  
-            probability = torch.sigmoid(logits)  
-            predictions.append(probability.item())
+        frame = eval_trans(frame) 
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frames.append(frame) 
 
 
-    # average prediction score (0 to 1) 
-    avg_pred = np.mean(predictions) 
+    frames = torch.stack(frames).to(device) 
 
 
-    # return decision for batch 
-    if avg_pred > 0.5: 
-        return 1
-    
-    else: 
-        return 0
+    with torch.no_grad: 
+        
+        # get probability
+        pred = model(frames) 
+        prob = torch.softmax(pred, dim=1) 
+
+
+        prob_fake = prob[:, 1]
+
+
+        total_prob = torch.mean(prob_fake) 
+
+
+    return round(total_prob*100, 4) 

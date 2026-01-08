@@ -2,93 +2,29 @@ import cv2
 import numpy as np
 import torch
 import yt_dlp
+from predictor import predict
 
 # for testing purposes
 #import os
 
 
-# will change image preprocessing to using custom data loader
+def load_pred(file_path): 
 
-def process_img(img) -> np.ndarray: 
-    
-
-    # Change color scale to RGB 
-    img_RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+     # finds frames with face
+    final_pred = predict(file_path)
 
 
-    # Rescale cropped image 229 by 229
-    crop_img = cv2.resize(img_RGB, (299, 299), interpolation=cv2.INTER_LINEAR)
+    # if faces cannot be found, end the program
+    if final_pred is None: 
 
-
-    return crop_img
-
-
-
-
-
-# Normalize img to [0, 1] pixel scale then standardize by using mean and std
-# Note: Mean and standard deviation based model input 
-def normalize_img(img, mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5)) -> np.ndarray: 
-
-
-    # from 8-bit to 32-bit float and normalize to [0,1] scale
-    img_float = img.astype(np.float32) / 255.0
-
-
-    # Z-score nomalization for each color channel in RBG
-    for c in range(3): 
-        img_float[..., c] = (img_float[..., c] - mean[c]) / std[c]
+        print("No face frames detected in video. Prediction: 'None'")
+        exit() 
 
     
-    return img_float
+    else: 
 
+        return f"The video is {final_pred}% fake."
 
-
-
-
-# import images from detection.py
-def img_to_clip(images: list[np.ndarray]) -> list[torch.Tensor]: 
-
-
-    processed_imgs = []
-
-
-    # Create list with processed images
-    for n in images: 
-
-        img = process_img(n)
-        img = normalize_img(img)
-        processed_imgs.append(img)
-
-
-    clp_size = len(processed_imgs)
-    clips = [] 
-
-
-    # Create batch of clips (32 frames per clip - 92% overlap)
-    for n in range(0, clp_size - 31, 2): 
-
-        c = processed_imgs[n: n+31]
-
-
-        # Stack image clips in matrix 
-        clip_arr = np.stack(c, axis=0)
-
-
-        # Transpose array to (C, T, H, W) format 
-        # .copy() added after debugging issues 
-        clip_arr = np.transpose(clip_arr, (3, 0, 1, 2))
-
-
-        # Converts to torch tensor and add batch dimension
-        tensor_clip = torch.from_numpy(clip_arr)
-        batch_clip = tensor_clip.unsqueeze(axis=0) 
-        clips.append(batch_clip) 
-
-
-
-        return clips
-    
 
 
 
